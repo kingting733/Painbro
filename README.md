@@ -52,7 +52,21 @@ You'll do these once. **Do not paste any keys into code or commits** — they go
 ### 3. Get an OpenAI API key
 - From the OpenAI dashboard, create a key → `OPENAI_API_KEY`.
 
-### 4. Add the secrets to GitHub
+### 4. Activate the GitHub Actions workflow
+
+The automated tooling can't write to `.github/workflows/` (the access token
+lacks `workflow` scope), so the workflow ships at the repo root as
+[`cron-workflow.yml`](cron-workflow.yml). Activate it once via the web UI:
+
+1. On GitHub, click **Add file → Create new file**.
+2. Name it exactly: `.github/workflows/cron.yml`
+3. Paste the entire contents of `cron-workflow.yml` into it.
+4. Commit to the `claude/quirky-dirac-3qwsuv` branch.
+
+(After this, `cron-workflow.yml` at the root is just a reference copy — you can
+delete it or leave it.)
+
+### 5. Add the secrets to GitHub
 In **this repo → Settings → Secrets and variables → Actions → New repository secret**, add:
 
 | Secret name             | Value                                  |
