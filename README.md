@@ -172,6 +172,50 @@ up right where the schedule left off.
 > requires for *any* write to that specific folder. Every other file in this
 > repo I can edit and push directly.
 
+### Reliable scheduling via an external trigger (recommended)
+
+GitHub's built-in cron is "best effort" — it often delays or silently drops
+scheduled runs, especially on new repos. If your schedule isn't firing
+reliably, use a free external scheduler to call GitHub's API on time instead.
+This uses the `workflow_dispatch` trigger the workflow already has, so **no
+workflow-file change is needed** — you can even delete the `schedule:` block
+once this is working.
+
+**A. Create a fine-grained GitHub token** (least privilege)
+1. GitHub → **Settings → Developer settings → Fine-grained personal access tokens → Generate new token**.
+2. **Repository access** → *Only select repositories* → pick **Painbro** only.
+3. **Permissions** → Repository permissions → **Actions** → **Read and write**.
+   (Leave everything else as "No access".)
+4. Set an expiry (e.g. 90 days — you'll regenerate it later), generate, and
+   **copy the token**. Paste it straight into the scheduler in step B —
+   never into code, commits, or chat.
+
+**B. Create the scheduled HTTP job** (e.g. at [cron-job.org](https://cron-job.org), free)
+- **URL:**
+  `https://api.github.com/repos/kingting733/Painbro/actions/workflows/cron.yml/dispatches`
+- **Method:** `POST`
+- **Schedule:** every 15 minutes (or whatever you want — this scheduler is reliable)
+- **Headers:**
+  - `Accept: application/vnd.github+json`
+  - `Authorization: Bearer <YOUR_TOKEN>`
+  - `X-GitHub-Api-Version: 2022-11-28`
+  - `Content-Type: application/json`
+- **Body:** `{"ref":"main"}`
+
+A success is HTTP **204 No Content**. The run then appears in the Actions tab
+just like a manual run. To rotate the token later, regenerate it in GitHub and
+update the `Authorization` header in the scheduler.
+
+> Test it once from a terminal (replace the token; this triggers a real run):
+> ```bash
+> curl -X POST \
+>   -H "Accept: application/vnd.github+json" \
+>   -H "Authorization: Bearer <YOUR_TOKEN>" \
+>   -H "X-GitHub-Api-Version: 2022-11-28" \
+>   https://api.github.com/repos/kingting733/Painbro/actions/workflows/cron.yml/dispatches \
+>   -d '{"ref":"main"}'
+> ```
+
 ---
 
 ## Alert format
