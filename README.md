@@ -57,7 +57,8 @@ You'll do these once. **Do not paste any keys into code or commits** — they go
 1. Create a key at the DeepSeek platform → use it as `OPENAI_API_KEY`.
 2. Add a repo **Variable** (Settings → Secrets and variables → Actions → **Variables** tab):
    - `OPENAI_BASE_URL` = `https://api.deepseek.com`
-   - `OPENAI_MODEL` = `deepseek-chat`
+   - `OPENAI_MODEL` = `deepseek-v4-pro` (or `deepseek-v4-flash` for a cheaper/faster tier —
+     `deepseek-chat` still works but is a legacy alias being phased out)
 
 No code changes needed — the worker uses the OpenAI SDK pointed at DeepSeek's
 endpoint. Switch back to OpenAI later by clearing `OPENAI_BASE_URL` and setting
