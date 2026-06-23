@@ -128,6 +128,52 @@ quiet" and "broken":
 
 ---
 
+## Changing the schedule, and turning it on/off
+
+### Change how often it runs
+
+Edit `.github/workflows/cron.yml` directly on GitHub (pencil icon → edit →
+**Commit changes**) and change the `cron:` line. The file has examples in a
+comment right above it:
+
+```yaml
+schedule:
+  - cron: "*/15 * * * *"   # every 15 minutes — change this line
+```
+
+Common values (all times UTC, GitHub's clock):
+
+| Cadence | Cron expression |
+|---|---|
+| Every 15 min (current) | `*/15 * * * *` |
+| Every 30 min | `*/30 * * * *` |
+| Every hour | `0 * * * *` |
+| Every 2 hours | `0 */2 * * *` |
+| Twice a day (08:00 & 20:00 UTC) | `0 8,20 * * *` |
+
+[`cron-workflow.yml`](cron-workflow.yml) at the repo root mirrors the live file
+with the same examples — handy as a reference, but **the real schedule only
+takes effect from `.github/workflows/cron.yml`** (I can't write to that path
+myself — see note below — so this is a manual edit).
+
+### Turn it off / on
+
+No code change needed — GitHub Actions has a built-in switch:
+1. Go to **Actions** tab → click **market-alert-cron** in the left sidebar.
+2. Top-right **"…"** menu → **Disable workflow**.
+3. To resume, same menu → **Enable workflow**.
+
+While disabled, neither the schedule nor manual **Run workflow** will fire —
+it's fully paused. No secrets, data, or history are affected; re-enabling picks
+up right where the schedule left off.
+
+> Why I can't push `.github/workflows/cron.yml` myself: the GitHub access
+> token this assistant uses lacks the `workflow` OAuth scope, which GitHub
+> requires for *any* write to that specific folder. Every other file in this
+> repo I can edit and push directly.
+
+---
+
 ## Alert format
 
 ```

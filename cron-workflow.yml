@@ -1,8 +1,15 @@
 name: market-alert-cron
 
 on:
-  # Roughly every 15 minutes. GitHub may delay/skip scheduled runs under load,
-  # so treat this cadence as approximate.
+  # Edit the cron expression below to change how often this runs.
+  # Format: minute hour day month weekday (all in UTC, GitHub's clock).
+  #   */15 * * * *   -> every 15 minutes (current)
+  #   */30 * * * *   -> every 30 minutes
+  #   0 * * * *      -> every hour, on the hour
+  #   0 */2 * * *    -> every 2 hours
+  #   0 8,20 * * *   -> twice a day, 08:00 and 20:00 UTC
+  # GitHub may delay/skip scheduled runs under load, so treat any cadence here
+  # as approximate, not exact.
   schedule:
     - cron: "*/15 * * * *"
   # Lets you trigger a run manually from the Actions tab (great for the first test).
