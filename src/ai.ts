@@ -1,4 +1,6 @@
 import OpenAI from "openai";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { config } from "./config";
 import type { FeedItem } from "./sources";
 
@@ -29,23 +31,12 @@ const client = new OpenAI({
   baseURL: config.openaiBaseUrl, // undefined => OpenAI default; set for DeepSeek etc.
 });
 
-const SYSTEM_PROMPT = `你是一個專業的金融市場分析師，專門判斷新聞對市場嘅即時影響。
-你會收到一則新聞（標題 + 摘要）。請判斷佢對交易者係咪重要，並用繁體中文 / 廣東話分析。
-
-只有當新聞對以下市場有明確、可操作嘅潛在影響時，先設 post=true：
-BTC、ETH、黃金、原油、納斯達克、美元指數(DXY)。
-純粹娛樂、體育、與市場無關嘅政治口水、舊聞重post，一律 post=false。
-
-severity 定義：
-- WATCH：值得留意但短期影響細
-- MEDIUM：可能引起明顯波動
-- HIGH：重大、可能引起急劇市場反應
-
-confidence 係你對「呢單嘢真係會影響市場」嘅信心：Low / Medium / High。
-
-market impact 每一項用一句簡短廣東話描述方向同理由（例如「利好，避險情緒升溫」「中性偏淡」），如果無明顯影響就寫「中性」。
-
-你必須只輸出 JSON，唔好有任何其他文字。`;
+// The analyst instructions live in prompt.md at the repo root so you can edit
+// them in GitHub's web editor without touching code. Loaded once at startup.
+const SYSTEM_PROMPT = readFileSync(
+  fileURLToPath(new URL("../prompt.md", import.meta.url)),
+  "utf8",
+).trim();
 
 function jsonSchemaHint(): string {
   return `請只回覆以下 JSON 結構（值用繁體中文/廣東話，severity 同 confidence 用指定英文字）：

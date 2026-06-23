@@ -156,22 +156,36 @@ quiet" and "broken":
 
 ---
 
-## Adding more RSS sources
+## Editing the AI prompt and RSS sources (no code)
 
-Edit [`src/sources.ts`](src/sources.ts) → add to the `SOURCES` array:
+The two things you'll tweak most often live in plain files at the repo root, so
+you can edit them straight in GitHub's web editor (pencil icon → edit → **Commit
+changes**). The next run picks them up automatically — no code, no redeploy.
 
-```ts
-export const SOURCES: FeedSource[] = [
-  { name: "Trump Truth Social", url: "https://trumpstruth.org/feed" },
-  { name: "CoinDesk", url: "https://www.coindesk.com/arc/outboundfeeds/rss/" },
-  // { name: "Reuters Business", url: "https://…/rss" },
-];
+### Adjust the AI prompt → [`prompt.md`](prompt.md)
+
+This whole file IS the analyst's system prompt (sent verbatim to the AI). Edit
+the wording to change how it judges importance, tone, severity, etc.
+
+> Keep the last line — `你必須只輸出 JSON…` — and don't describe a different JSON
+> shape; the code parses a fixed structure. Change the *judgement/wording*, not
+> the output format.
+
+### Review / manage RSS sources → [`sources.json`](sources.json)
+
+A simple list — open it to see every source at a glance. Add or remove entries:
+
+```json
+[
+  { "name": "Trump Truth Social", "url": "https://trumpstruth.org/feed" },
+  { "name": "CoinDesk", "url": "https://www.coindesk.com/arc/outboundfeeds/rss/" },
+  { "name": "Reuters Business", "url": "https://…/rss" }
+]
 ```
 
-Commit and push — the next scheduled run uses them. New feeds get seeded on their
-first appearance only if the DB is empty; otherwise new items flow through the
-normal pipeline (so adding a noisy feed can mean more alerts — tune `MAX_AGE_HOURS`
-/ keywords if needed).
+Mind the JSON: each entry needs `name` and `url`, items separated by commas, no
+trailing comma after the last one. New feeds flow through the normal pipeline
+(so a noisy feed can mean more alerts — tune `MAX_AGE_HOURS` / keywords if needed).
 
 ---
 
@@ -180,11 +194,13 @@ normal pipeline (so adding a noisy feed can mean more alerts — tune `MAX_AGE_H
 ```
 .github/workflows/cron.yml   GitHub Actions schedule + secrets wiring
 supabase/schema.sql          Run once in Supabase SQL editor
+prompt.md                    The AI system prompt (edit this to tune judgement)
+sources.json                 The RSS feed list (edit this to add/remove sources)
 src/
   index.ts                   Orchestrates one run, then exits
-  sources.ts                 RSS feed list + fetch/parse (per-source error isolation)
+  sources.ts                 Loads sources.json + fetch/parse (per-source error isolation)
   filter.ts                  Keyword gate (word-boundary matching)
-  ai.ts                      OpenAI classification -> structured JSON
+  ai.ts                      Loads prompt.md + OpenAI classification -> structured JSON
   telegram.ts                Alert formatting + send
   db.ts                      Supabase: dedup, seed, mark-seen, run logs
   config.ts                  Env var loading + validation

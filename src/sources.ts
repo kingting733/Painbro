@@ -1,4 +1,6 @@
 import Parser from "rss-parser";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 export interface FeedSource {
   name: string;
@@ -14,11 +16,11 @@ export interface FeedItem {
   publishedAt: Date | null;
 }
 
-// MVP sources. Add more entries here (see README "Adding more RSS sources").
-export const SOURCES: FeedSource[] = [
-  { name: "Trump Truth Social", url: "https://trumpstruth.org/feed" },
-  { name: "CoinDesk", url: "https://www.coindesk.com/arc/outboundfeeds/rss/" },
-];
+// The feed list lives in sources.json at the repo root so you can review/edit
+// it in GitHub's web editor without touching code. Loaded once at startup.
+export const SOURCES: FeedSource[] = JSON.parse(
+  readFileSync(fileURLToPath(new URL("../sources.json", import.meta.url)), "utf8"),
+) as FeedSource[];
 
 const parser = new Parser({
   timeout: 15000,
