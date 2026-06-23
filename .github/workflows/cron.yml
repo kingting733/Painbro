@@ -4,7 +4,7 @@ on:
   # Roughly every 15 minutes. GitHub may delay/skip scheduled runs under load,
   # so treat this cadence as approximate.
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "3,18,33,48 * * * *"
   # Lets you trigger a run manually from the Actions tab (great for the first test).
   workflow_dispatch: {}
 
