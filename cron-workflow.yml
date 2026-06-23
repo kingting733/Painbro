@@ -36,3 +36,6 @@ jobs:
           # Leave the OPENAI_BASE_URL repo variable unset for OpenAI;
           # set it to https://api.deepseek.com to use DeepSeek.
           OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL }}
+          # Set the FORCE_TEST_ALERT repo variable to 'true' to send one canned
+          # test alert to Telegram (bypasses feeds/keyword/AI). Clear it after.
+          FORCE_TEST_ALERT: ${{ vars.FORCE_TEST_ALERT }}

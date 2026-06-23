@@ -22,6 +22,11 @@ export const config = {
 
   maxAgeHours: num("MAX_AGE_HOURS", 2),
   maxAiCalls: num("MAX_AI_CALLS", 10),
+
+  // One-off check: set FORCE_TEST_ALERT=true to send a single canned alert to
+  // Telegram and exit, bypassing feeds/keyword/AI. Use it to confirm the
+  // Telegram path works, then clear the variable.
+  forceTestAlert: (process.env.FORCE_TEST_ALERT ?? "").trim().toLowerCase() === "true",
   openaiModel: process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini",
   // Optional: point at any OpenAI-compatible API (e.g. DeepSeek).
   // Leave unset for OpenAI. For DeepSeek: https://api.deepseek.com

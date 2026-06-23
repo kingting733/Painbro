@@ -106,6 +106,26 @@ After it works manually, the schedule (`*/15 * * * *`) takes over automatically.
 
 > Note: GitHub may delay or skip scheduled runs under load, so "every 15 min" is approximate. Workflows also auto-disable after 60 days of zero repo activity.
 
+### Confirming it actually works (two ways)
+
+A successful run with **no Telegram message is normal** — it just means nothing
+new passed the keyword/AI gates. To tell the difference between "working but
+quiet" and "broken":
+
+1. **Read the run log.** Every run prints a final summary line, e.g.
+   `[done] 2.5s | sources ok:2 fail:0 | new:0 keyword:0 ai:0 posted:0`.
+   - `ai:0` → the AI was never called (nothing new/relevant) — silence is expected.
+   - `ai:N posted:0` → AI ran but judged nothing alert-worthy.
+   - `posted:N` → it sent N alerts.
+   The same counts are stored in the `run_logs` table in Supabase.
+
+2. **Force a one-off test alert.** Add a repo **Variable** (Settings → Secrets
+   and variables → Actions → **Variables** tab) `FORCE_TEST_ALERT` = `true`,
+   then **Run workflow**. It skips feeds/keyword/AI and sends one canned sample
+   alert straight to your Telegram channel, so you can confirm the bot, channel,
+   and formatting are correct. **Delete the `FORCE_TEST_ALERT` variable (or set
+   it to anything other than `true`) afterwards** so normal runs resume.
+
 ---
 
 ## Alert format

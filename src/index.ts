@@ -1,7 +1,7 @@
 import { config } from "./config";
 import { SOURCES, fetchSource, type FeedItem } from "./sources";
 import { isMarketRelevant } from "./filter";
-import { classify } from "./ai";
+import { classify, type Classification } from "./ai";
 import { formatAlert, sendTelegram } from "./telegram";
 import {
   isFirstRun,
@@ -11,7 +11,45 @@ import {
   writeRunLog,
 } from "./db";
 
+/** Sends one canned alert so you can confirm the Telegram path end-to-end. */
+async function sendTestAlert(): Promise<void> {
+  const sample: FeedItem = {
+    guid: "test-alert",
+    source: "Test",
+    url: "https://github.com/kingting733/Painbro",
+    title: "Test alert",
+    content: "Test alert",
+    publishedAt: new Date(),
+  };
+  const sampleClassification: Classification = {
+    post: true,
+    topic: "系統測試",
+    severity: "WATCH",
+    confidence: "High",
+    title_zh: "✅ 測試訊息｜系統運作正常",
+    summary_zh: "呢個係一條測試 alert，用嚟確認 Telegram 同格式都 work 緊。如果你見到呢條訊息，代表成個發送流程都通咗。",
+    why_zh: "確認到 bot、channel、訊息格式設定全部正確，之後真係有市場新聞就會收到類似格式嘅 alert。",
+    impact: {
+      BTC: "中性（測試）",
+      ETH: "中性（測試）",
+      Gold: "中性（測試）",
+      Oil: "中性（測試）",
+      Nasdaq: "中性（測試）",
+      DXY: "中性（測試）",
+    },
+  };
+  await sendTelegram(formatAlert(sample, sampleClassification));
+  console.log("[test] sent one canned test alert to Telegram.");
+}
+
 async function main(): Promise<void> {
+  // One-off: confirm Telegram works without waiting for real news.
+  if (config.forceTestAlert) {
+    console.log("[test] FORCE_TEST_ALERT=true — sending a test alert and exiting.");
+    await sendTestAlert();
+    return;
+  }
+
   const startedAt = Date.now();
   let sourcesOk = 0;
   let sourcesFailed = 0;
