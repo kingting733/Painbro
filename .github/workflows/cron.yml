@@ -36,3 +36,4 @@ jobs:
           # Leave the OPENAI_BASE_URL repo variable unset for OpenAI;
           # set it to https://api.deepseek.com to use DeepSeek.
           OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL }}
+          FORCE_TEST_ALERT: ${{ vars.FORCE_TEST_ALERT }}
