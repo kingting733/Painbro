@@ -1,0 +1,38 @@
+name: market-alert-cron
+
+on:
+  # Roughly every 15 minutes. GitHub may delay/skip scheduled runs under load,
+  # so treat this cadence as approximate.
+  schedule:
+    - cron: "*/15 * * * *"
+  # Lets you trigger a run manually from the Actions tab (great for the first test).
+  workflow_dispatch: {}
+
+# Never let two runs overlap and double-post.
+concurrency:
+  group: market-alert
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - run: npm start
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          MAX_AGE_HOURS: ${{ vars.MAX_AGE_HOURS || '2' }}
+          MAX_AI_CALLS: ${{ vars.MAX_AI_CALLS || '10' }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-4o-mini' }}
+          # Leave the OPENAI_BASE_URL repo variable unset for OpenAI;
+          # set it to https://api.deepseek.com to use DeepSeek.
+          OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL }}
