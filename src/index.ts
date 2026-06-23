@@ -136,7 +136,13 @@ async function main(): Promise<void> {
   );
 }
 
-main().catch((err) => {
-  console.error("[fatal]", err);
-  process.exit(1);
-});
+main()
+  .then(() => {
+    // The Supabase client keeps timers/sockets open, which would otherwise
+    // prevent Node from exiting. Exit explicitly so the cron job terminates.
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error("[fatal]", err);
+    process.exit(1);
+  });
