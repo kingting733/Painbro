@@ -24,7 +24,10 @@ export interface Classification {
   why_zh: string; // why traders should care
 }
 
-const client = new OpenAI({ apiKey: config.openaiKey });
+const client = new OpenAI({
+  apiKey: config.openaiKey,
+  baseURL: config.openaiBaseUrl, // undefined => OpenAI default; set for DeepSeek etc.
+});
 
 const SYSTEM_PROMPT = `你是一個專業的金融市場分析師，專門判斷新聞對市場嘅即時影響。
 你會收到一則新聞（標題 + 摘要）。請判斷佢對交易者係咪重要，並用繁體中文 / 廣東話分析。

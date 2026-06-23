@@ -23,4 +23,7 @@ export const config = {
   maxAgeHours: num("MAX_AGE_HOURS", 2),
   maxAiCalls: num("MAX_AI_CALLS", 10),
   openaiModel: process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini",
+  // Optional: point at any OpenAI-compatible API (e.g. DeepSeek).
+  // Leave unset for OpenAI. For DeepSeek: https://api.deepseek.com
+  openaiBaseUrl: process.env.OPENAI_BASE_URL?.trim() || undefined,
 };

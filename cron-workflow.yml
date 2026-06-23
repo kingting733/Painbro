@@ -33,3 +33,6 @@ jobs:
           MAX_AGE_HOURS: ${{ vars.MAX_AGE_HOURS || '2' }}
           MAX_AI_CALLS: ${{ vars.MAX_AI_CALLS || '10' }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-4o-mini' }}
+          # Leave the OPENAI_BASE_URL repo variable unset for OpenAI;
+          # set it to https://api.deepseek.com to use DeepSeek.
+          OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL }}

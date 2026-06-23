@@ -49,8 +49,19 @@ You'll do these once. **Do not paste any keys into code or commits** — they go
    - **Project URL** → `SUPABASE_URL`
    - **`service_role` secret** → `SUPABASE_SERVICE_KEY` (keep this secret)
 
-### 3. Get an OpenAI API key
-- From the OpenAI dashboard, create a key → `OPENAI_API_KEY`.
+### 3. Get an AI API key
+
+**Option A — OpenAI:** create a key → `OPENAI_API_KEY` (default; uses `gpt-4o-mini`).
+
+**Option B — DeepSeek (cheaper, OpenAI-compatible — good for testing):**
+1. Create a key at the DeepSeek platform → use it as `OPENAI_API_KEY`.
+2. Add a repo **Variable** (Settings → Secrets and variables → Actions → **Variables** tab):
+   - `OPENAI_BASE_URL` = `https://api.deepseek.com`
+   - `OPENAI_MODEL` = `deepseek-chat`
+
+No code changes needed — the worker uses the OpenAI SDK pointed at DeepSeek's
+endpoint. Switch back to OpenAI later by clearing `OPENAI_BASE_URL` and setting
+`OPENAI_MODEL` back to `gpt-4o-mini`.
 
 ### 4. Activate the GitHub Actions workflow
 
