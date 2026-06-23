@@ -176,6 +176,8 @@ up right where the schedule left off.
 
 ## Alert format
 
+The default layout looks like this:
+
 ```
 🚨 Market Alert｜[SEVERITY]
 
@@ -200,6 +202,8 @@ up right where the schedule left off.
 來源：[source link]
 ```
 
+It's editable — see [`alert-template.txt`](alert-template.txt) below.
+
 ---
 
 ## Editing the AI prompt and RSS sources (no code)
@@ -216,6 +220,26 @@ the wording to change how it judges importance, tone, severity, etc.
 > Keep the last line — `你必須只輸出 JSON…` — and don't describe a different JSON
 > shape; the code parses a fixed structure. Change the *judgement/wording*, not
 > the output format.
+
+### Restyle the Telegram message → [`alert-template.txt`](alert-template.txt)
+
+This is the literal message layout — emoji, labels, line breaks, bullet order.
+Edit the wording/structure freely; just keep the `{{placeholder}}` tokens where
+you want that data to appear. Available placeholders:
+
+| Placeholder | Fills in with |
+|---|---|
+| `{{severity}}` | WATCH / MEDIUM / HIGH |
+| `{{title}}` | one-line Cantonese headline |
+| `{{summary}}` | 2-3 sentence summary |
+| `{{why}}` | why traders should care |
+| `{{btc}}` `{{eth}}` `{{gold}}` `{{oil}}` `{{nasdaq}}` `{{dxy}}` | per-asset impact |
+| `{{confidence}}` | Low / Medium / High |
+| `{{source_url}}` | link to the original article |
+
+If you delete a placeholder, that piece of data simply won't appear — nothing
+breaks. Don't rename the tokens inside `{{ }}`; the code looks for these exact
+names.
 
 ### Review / manage RSS sources → [`sources.json`](sources.json)
 
@@ -242,12 +266,13 @@ trailing comma after the last one. New feeds flow through the normal pipeline
 supabase/schema.sql          Run once in Supabase SQL editor
 prompt.md                    The AI system prompt (edit this to tune judgement)
 sources.json                 The RSS feed list (edit this to add/remove sources)
+alert-template.txt           The Telegram message layout (edit this to restyle alerts)
 src/
   index.ts                   Orchestrates one run, then exits
   sources.ts                 Loads sources.json + fetch/parse (per-source error isolation)
   filter.ts                  Keyword gate (word-boundary matching)
   ai.ts                      Loads prompt.md + OpenAI classification -> structured JSON
-  telegram.ts                Alert formatting + send
+  telegram.ts                Loads alert-template.txt + fills it in + sends
   db.ts                      Supabase: dedup, seed, mark-seen, run logs
   config.ts                  Env var loading + validation
 .env.example                 Documents required env vars (values live in Actions secrets)
