@@ -315,6 +315,43 @@ Mind the JSON: each entry needs `name` and `url`, items separated by commas, no
 trailing comma after the last one. New feeds flow through the normal pipeline
 (so a noisy feed can mean more alerts — tune `MAX_AGE_HOURS` / keywords if needed).
 
+### Route alerts to Telegram topics → [`routing.json`](routing.json)
+
+Optional. Lets one alert land in different **topics** of a Telegram forum group
+based on which assets it affects. An alert posts to **every** topic it's relevant
+to (so a Fed story affecting both crypto and macro appears in both).
+
+```json
+{
+  "topics": [
+    { "name": "crypto", "assets": ["BTC", "ETH"], "topic_id": 0 },
+    { "name": "macro", "assets": ["Gold", "Oil", "Nasdaq", "DXY"], "topic_id": 0 }
+  ],
+  "fallback_topic_id": 0
+}
+```
+
+- A topic matches if **any** of its `assets` has a non-neutral score.
+- `topic_id` is the Telegram forum topic's thread id (an integer).
+- **`topic_id: 0` means "no specific topic"** — it just posts to the chat
+  normally. While every id is `0` (the default), routing is effectively off and
+  the bot behaves exactly like a single-channel setup. **Nothing to do until you
+  want topics.**
+- `fallback_topic_id` is used when an alert matches no topic (all assets neutral).
+
+**To turn it on:**
+1. Use a Telegram **group** with **Topics enabled** (Settings → Edit → Topics).
+   Topics don't exist in channels — so this group replaces the test channel as
+   the destination, and `TELEGRAM_CHAT_ID` becomes the **group's** id.
+2. Create your topics (e.g. "Crypto", "Macro"), then get each topic's thread id:
+   post a message in the topic, open
+   `https://api.telegram.org/bot<TOKEN>/getUpdates`, and read the
+   `"message_thread_id"` field.
+3. Put those numbers into `routing.json` and commit. Done.
+
+> Emoji glyphs and the asset→topic mapping are both editable — glyphs in
+> `src/telegram.ts`, the mapping here.
+
 ---
 
 ## Project layout
@@ -325,6 +362,7 @@ supabase/schema.sql          Run once in Supabase SQL editor
 prompt.md                    The AI system prompt (edit this to tune judgement)
 sources.json                 The RSS feed list (edit this to add/remove sources)
 alert-template.txt           The Telegram message layout (edit this to restyle alerts)
+routing.json                 Which topic(s) each alert goes to (optional; off by default)
 src/
   index.ts                   Orchestrates one run, then exits
   sources.ts                 Loads sources.json + fetch/parse (per-source error isolation)

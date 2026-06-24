@@ -2,7 +2,7 @@ import { config } from "./config";
 import { SOURCES, fetchSource, type FeedItem } from "./sources";
 import { isMarketRelevant } from "./filter";
 import { classify, type Classification } from "./ai";
-import { formatAlert, sendTelegram } from "./telegram";
+import { sendAlert } from "./telegram";
 import {
   isFirstRun,
   getSeenGuids,
@@ -39,8 +39,8 @@ async function sendTestAlert(): Promise<void> {
       DXY: 0,
     },
   };
-  await sendTelegram(formatAlert(sample, sampleClassification));
-  console.log("[test] sent one canned test alert to Telegram.");
+  const topics = await sendAlert(sample, sampleClassification);
+  console.log(`[test] sent one canned test alert to ${topics} topic(s).`);
 }
 
 async function main(): Promise<void> {
@@ -141,10 +141,10 @@ async function main(): Promise<void> {
       aiCalled++;
       const result = await classify(item);
       if (result.post) {
-        await sendTelegram(formatAlert(item, result));
+        const topics = await sendAlert(item, result);
         shouldPost = true;
         posted++;
-        console.log(`[posted] ${result.severity} — ${item.title}`);
+        console.log(`[posted] ${result.severity} to ${topics} topic(s) — ${item.title}`);
       } else {
         console.log(`[skip] post=false — ${item.title}`);
       }

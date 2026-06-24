@@ -1,0 +1,7 @@
+{
+  "topics": [
+    { "name": "crypto", "assets": ["BTC", "ETH"], "topic_id": 0 },
+    { "name": "macro", "assets": ["Gold", "Oil", "Nasdaq", "DXY"], "topic_id": 0 }
+  ],
+  "fallback_topic_id": 0
+}

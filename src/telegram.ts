@@ -11,6 +11,39 @@ const TEMPLATE = readFileSync(
   "utf8",
 );
 
+// Topic routing config (routing.json at the repo root). Decides which Telegram
+// forum topic(s) each alert goes to, based on which assets it affects.
+interface RoutingTopic {
+  name: string;
+  assets: string[];
+  topic_id: number;
+}
+interface Routing {
+  topics: RoutingTopic[];
+  fallback_topic_id: number;
+}
+const ROUTING = JSON.parse(
+  readFileSync(fileURLToPath(new URL("../routing.json", import.meta.url)), "utf8"),
+) as Routing;
+
+// Decide which topic thread id(s) an alert goes to. A topic matches if ANY of
+// its assets has a non-neutral score. An item can match several topics, so it
+// gets posted to each (duplicates are fine by design). If nothing matches, the
+// fallback topic is used. topic_id 0 means "no specific topic" (send to the
+// chat normally) — and all 0s collapse to a single send, so an unconfigured
+// routing.json behaves exactly like the old single-channel setup.
+function resolveThreadIds(impact: Classification["impact"]): number[] {
+  const scores = impact as unknown as Record<string, number>;
+  const matched: number[] = [];
+  for (const t of ROUTING.topics ?? []) {
+    if (t.assets.some((a) => (scores[a] ?? 0) !== 0)) {
+      matched.push(t.topic_id ?? 0);
+    }
+  }
+  const ids = matched.length ? matched : [ROUTING.fallback_topic_id ?? 0];
+  return [...new Set(ids)];
+}
+
 // Emoji used for the impact scale. 🔺 = bullish (利好), 🔻 = bearish (利淡).
 // Want different glyphs? Change these two lines.
 const UP = "🔺";
@@ -50,21 +83,40 @@ export function formatAlert(item: FeedItem, c: Classification): string {
   return TEMPLATE.replace(/\{\{(\w+)\}\}/g, (match, key) => values[key] ?? match);
 }
 
-/** Sends a plain-text message to the configured chat. Throws on failure. */
-export async function sendTelegram(text: string): Promise<void> {
+/**
+ * Format an alert and send it to every topic it's relevant to (by impact).
+ * Returns the number of topics it was posted to.
+ */
+export async function sendAlert(item: FeedItem, c: Classification): Promise<number> {
+  const text = formatAlert(item, c);
+  const threads = resolveThreadIds(c.impact);
+  for (const threadId of threads) {
+    await sendTelegram(text, threadId);
+  }
+  return threads.length;
+}
+
+/**
+ * Sends a plain-text message to the configured chat. Throws on failure.
+ * If messageThreadId > 0, posts into that Telegram forum topic.
+ */
+export async function sendTelegram(text: string, messageThreadId = 0): Promise<void> {
   const url = `https://api.telegram.org/bot${config.telegramToken}/sendMessage`;
+  const body: Record<string, unknown> = {
+    chat_id: config.telegramChatId,
+    text,
+    disable_web_page_preview: false,
+  };
+  if (messageThreadId > 0) body.message_thread_id = messageThreadId;
+
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: config.telegramChatId,
-      text,
-      disable_web_page_preview: false,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`Telegram sendMessage failed (${res.status}): ${body}`);
+    const errBody = await res.text().catch(() => "");
+    throw new Error(`Telegram sendMessage failed (${res.status}): ${errBody}`);
   }
 }
