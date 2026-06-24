@@ -12,13 +12,17 @@ export interface Classification {
   topic: string;
   severity: Severity;
   confidence: Confidence;
+  // Per-asset impact score, integer -5..+5.
+  //  +5 = extreme bullish (極端利好) ... +1 = slightly bullish
+  //   0 = neutral (中性, hidden in the alert)
+  //  -1 = slightly bearish ... -5 = extreme bearish (極端利淡)
   impact: {
-    BTC: string;
-    ETH: string;
-    Gold: string;
-    Oil: string;
-    Nasdaq: string;
-    DXY: string;
+    BTC: number;
+    ETH: number;
+    Gold: number;
+    Oil: number;
+    Nasdaq: number;
+    DXY: number;
   };
   // Cantonese / Traditional Chinese fields used directly in the Telegram alert.
   title_zh: string; // one-line Cantonese headline
@@ -39,7 +43,7 @@ const SYSTEM_PROMPT = readFileSync(
 ).trim();
 
 function jsonSchemaHint(): string {
-  return `請只回覆以下 JSON 結構（值用繁體中文/廣東話，severity 同 confidence 用指定英文字）：
+  return `請只回覆以下 JSON 結構（severity 同 confidence 用指定英文字，文字欄位用繁體中文/廣東話）：
 {
   "post": true 或 false,
   "topic": "簡短分類，例如：貨幣政策 / 地緣政治 / 加密監管",
@@ -49,10 +53,14 @@ function jsonSchemaHint(): string {
   "summary_zh": "2-3 句廣東話摘要",
   "why_zh": "解釋點解交易者要關注",
   "impact": {
-    "BTC": "...", "ETH": "...", "Gold": "...",
-    "Oil": "...", "Nasdaq": "...", "DXY": "..."
+    "BTC": 整數, "ETH": 整數, "Gold": 整數,
+    "Oil": 整數, "Nasdaq": 整數, "DXY": 整數
   }
-}`;
+}
+
+impact 每一項係 -5 到 +5 嘅整數，代表呢單新聞對該資產嘅方向同強度：
+  +5 = 極端利好，+1 = 輕微利好，0 = 中性/無影響，-1 = 輕微利淡，-5 = 極端利淡。
+無明顯影響就寫 0。`;
 }
 
 export async function classify(item: FeedItem): Promise<Classification> {
@@ -87,14 +95,22 @@ ${jsonSchemaHint()}`;
     summary_zh: parsed.summary_zh ?? "",
     why_zh: parsed.why_zh ?? "",
     impact: {
-      BTC: parsed.impact?.BTC ?? "中性",
-      ETH: parsed.impact?.ETH ?? "中性",
-      Gold: parsed.impact?.Gold ?? "中性",
-      Oil: parsed.impact?.Oil ?? "中性",
-      Nasdaq: parsed.impact?.Nasdaq ?? "中性",
-      DXY: parsed.impact?.DXY ?? "中性",
+      BTC: normalizeScore(parsed.impact?.BTC),
+      ETH: normalizeScore(parsed.impact?.ETH),
+      Gold: normalizeScore(parsed.impact?.Gold),
+      Oil: normalizeScore(parsed.impact?.Oil),
+      Nasdaq: normalizeScore(parsed.impact?.Nasdaq),
+      DXY: normalizeScore(parsed.impact?.DXY),
     },
   };
+}
+
+// Coerce the AI's per-asset value into an integer clamped to -5..+5.
+// Anything unparseable becomes 0 (neutral), so a bad value just hides the line.
+function normalizeScore(value: unknown): number {
+  const n = Math.round(Number(value));
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(-5, Math.min(5, n));
 }
 
 function normalizeSeverity(value: unknown): Severity {

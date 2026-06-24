@@ -29,13 +29,14 @@ async function sendTestAlert(): Promise<void> {
     title_zh: "✅ 測試訊息｜系統運作正常",
     summary_zh: "呢個係一條測試 alert，用嚟確認 Telegram 同格式都 work 緊。如果你見到呢條訊息，代表成個發送流程都通咗。",
     why_zh: "確認到 bot、channel、訊息格式設定全部正確，之後真係有市場新聞就會收到類似格式嘅 alert。",
+    // Sample scores to show the emoji scale + neutral-hiding (Gold/Oil/DXY = 0).
     impact: {
-      BTC: "中性（測試）",
-      ETH: "中性（測試）",
-      Gold: "中性（測試）",
-      Oil: "中性（測試）",
-      Nasdaq: "中性（測試）",
-      DXY: "中性（測試）",
+      BTC: 5,
+      ETH: 3,
+      Gold: 0,
+      Oil: 0,
+      Nasdaq: -2,
+      DXY: 0,
     },
   };
   await sendTelegram(formatAlert(sample, sampleClassification));

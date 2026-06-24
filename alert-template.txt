@@ -9,13 +9,8 @@
 點解重要：
 {{why}}
 
-可能市場影響：
-• BTC: {{btc}}
-• ETH: {{eth}}
-• Gold: {{gold}}
-• Oil: {{oil}}
-• Nasdaq: {{nasdaq}}
-• DXY: {{dxy}}
+可能市場影響：（🔺利好 🔻利淡，數量＝強度）
+{{impact}}
 
 可信度：{{confidence}}
 來源：{{source_url}}

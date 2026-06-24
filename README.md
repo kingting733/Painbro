@@ -234,19 +234,18 @@ The default layout looks like this:
 點解重要：
 [點解交易者要關注]
 
-可能市場影響：
-• BTC: …
-• ETH: …
-• Gold: …
-• Oil: …
-• Nasdaq: …
-• DXY: …
+可能市場影響：（🔺利好 🔻利淡，數量＝強度）
+• BTC: 🔺🔺🔺🔺🔺
+• ETH: 🔺🔺🔺
+• Nasdaq: 🔻🔻
 
 可信度：[CONFIDENCE]
 來源：[source link]
 ```
 
-It's editable — see [`alert-template.txt`](alert-template.txt) below.
+Only assets with a non-neutral impact appear (Gold/Oil/DXY are hidden above
+because they scored neutral). It's editable — see
+[`alert-template.txt`](alert-template.txt) below.
 
 ---
 
@@ -277,13 +276,28 @@ you want that data to appear. Available placeholders:
 | `{{title}}` | one-line Cantonese headline |
 | `{{summary}}` | 2-3 sentence summary |
 | `{{why}}` | why traders should care |
-| `{{btc}}` `{{eth}}` `{{gold}}` `{{oil}}` `{{nasdaq}}` `{{dxy}}` | per-asset impact |
+| `{{impact}}` | the per-asset impact block (see below) |
 | `{{confidence}}` | Low / Medium / High |
 | `{{source_url}}` | link to the original article |
 
 If you delete a placeholder, that piece of data simply won't appear — nothing
 breaks. Don't rename the tokens inside `{{ }}`; the code looks for these exact
 names.
+
+**The `{{impact}}` block** is built automatically as one line per asset, e.g.:
+
+```
+• BTC: 🔺🔺🔺🔺🔺
+• ETH: 🔺🔺🔺
+• Nasdaq: 🔻🔻
+```
+
+- 🔺 = bullish (利好), 🔻 = bearish (利淡); the **count = strength** (1–5).
+- Assets scored **neutral (0) are hidden** — they don't get a line at all.
+- If every asset is neutral, it shows `• 各市場暫無明顯影響`.
+- To change the emoji glyphs, edit `UP`/`DOWN` near the top of
+  [`src/telegram.ts`](src/telegram.ts). The −5..+5 scoring itself comes from the
+  AI (see the impact rules in [`prompt.md`](prompt.md)).
 
 ### Review / manage RSS sources → [`sources.json`](sources.json)
 

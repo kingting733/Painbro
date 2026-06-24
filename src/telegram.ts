@@ -11,18 +11,39 @@ const TEMPLATE = readFileSync(
   "utf8",
 );
 
+// Emoji used for the impact scale. 🔺 = bullish (利好), 🔻 = bearish (利淡).
+// Want different glyphs? Change these two lines.
+const UP = "🔺";
+const DOWN = "🔻";
+
+// Build the per-asset impact block: one line per asset whose score isn't 0,
+// rendered as N up/down emoji. Neutral (0) assets are omitted entirely.
+function renderImpact(impact: Classification["impact"]): string {
+  const assets: Array<[keyof Classification["impact"], string]> = [
+    ["BTC", "BTC"],
+    ["ETH", "ETH"],
+    ["Gold", "Gold"],
+    ["Oil", "Oil"],
+    ["Nasdaq", "Nasdaq"],
+    ["DXY", "DXY"],
+  ];
+  const lines: string[] = [];
+  for (const [key, label] of assets) {
+    const score = impact[key];
+    if (!score) continue; // hide neutral (0) assets
+    const emoji = score > 0 ? UP.repeat(score) : DOWN.repeat(-score);
+    lines.push(`• ${label}: ${emoji}`);
+  }
+  return lines.length ? lines.join("\n") : "• 各市場暫無明顯影響";
+}
+
 export function formatAlert(item: FeedItem, c: Classification): string {
   const values: Record<string, string> = {
     severity: c.severity,
     title: c.title_zh,
     summary: c.summary_zh,
     why: c.why_zh,
-    btc: c.impact.BTC,
-    eth: c.impact.ETH,
-    gold: c.impact.Gold,
-    oil: c.impact.Oil,
-    nasdaq: c.impact.Nasdaq,
-    dxy: c.impact.DXY,
+    impact: renderImpact(c.impact),
     confidence: c.confidence,
     source_url: item.url,
   };
